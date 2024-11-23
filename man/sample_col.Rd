@@ -9,6 +9,9 @@ sample_col(off_set = 0)
 \arguments{
 \item{off_set}{A natural number, the lower bound for the column's values}
 }
+\value{
+A vector of 5 random integers between \code{off_set} and \code{off_set + 15}
+}
 \description{
 Sample column values
 }

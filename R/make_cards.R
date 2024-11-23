@@ -4,7 +4,7 @@
 #'
 #' @param off_set A natural number, the lower bound for the column's values
 #'
-#' @return
+#' @return A vector of 5 random integers between `off_set` and `off_set + 15`
 #' @export
 #'
 #' @examples #none
