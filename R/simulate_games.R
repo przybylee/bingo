@@ -72,19 +72,31 @@ play_game <- R6::R6Class(
   public = list(
     initialize = function(cards) {
       self$spaces <- draw_spaces(cards)
+      self$order_number <- self$spaces$order_number
+      self$turns <- 0
       self$cards <- cards
+      self$cards_in_play <- cards
       self$drawn <- c()
-      self$bingo <- FALSE
+      self$bingos <- data.frame(
+        card = 1:ncol(cards),
+        bingo_turn = 0
+      )
     },
     draw = function() {
-      if (length(self$drawn) == length(self$spaces$order)) {
-        self$bingo <- TRUE
-      } else {
-        self$drawn <- c(self$drawn, self$spaces$order[length(self$drawn) + 1])
+      self$turns <- self$turns + 1
+      self$drawn <- c(self$drawn, self$spaces$order[self$turns])
+    },
+    check_cards <- function() {
+      bingos <- self$cards_in_play %>% 
+        purrr::map_lgl(~check_card(., self$drawn)) %>% 
+        which() 
+      
+      if(length(bingos) > 0) {
+        self$bingos$bingo_turn[bingos] <- self$turns
+        self$cards_in_play <- self$cards_in_play[-bingos]
       }
     },
-    check_bingo = function() {
-      self$bingo
+    }
     }
   )
 )
