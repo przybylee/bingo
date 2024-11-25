@@ -1,5 +1,5 @@
 Package: bingo
-Title:  Simulate games of bingo
+Title: Simulate games of bingo
 Version: 0.0.0.9000
 Authors@R: 
     person("Lee", "Przybylski", , "przybylskily@gmail.com", role = c("aut", "cre"),
@@ -10,4 +10,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Imports: 
-    dplyr
+    dplyr,
+    magrittr,
+    purrr
