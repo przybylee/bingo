@@ -36,9 +36,9 @@ draw_spaces <- function(cards) {
   )
   
   list(
-    order <- spaces_order,
-    grid <- spaces_grid,
-    order_number <- stringr::str_extract(spaces_order, "\\d+"),
+    order = spaces_order,
+    grid = spaces_grid,
+    order_number = stringr::str_extract(spaces_order, "\\d+")
   )
 }
 
@@ -70,33 +70,76 @@ check_card <- function(card, drawn) {
 play_game <- R6::R6Class(
   "play_game",
   public = list(
-    initialize = function(cards) {
+    #' @field cards A list of bingo cards used in the game
+    cards = NULL,
+    
+    #' @field spaces A list of spaces to call during the game
+    spaces = NULL,
+    
+    #' @field order_number The order of the spaces to call
+    order_number = NULL,
+    
+    #' @field turns The number of turns that have been played
+    turns = NA_real_,
+    
+    #' @field cards_in_play Integer vector to index cards that are still in play
+    cards_in_play = NULL,
+    
+    #' @field drawn A vector of spaces that have been drawn
+    drawn = NULL,
+    
+    #' @field bingos A data frame to track when cards win a bingo
+    bingos = NULL,
+    
+    initialize = function(n = 2, cards = NULL) {
+      if(is.null(cards)) {
+        cards <- make_n_cards(n)
+       } else if (n != length(cards)) {
+       futile.logger::flog.warn(
+         "Playing with %i cards, but %i cards were expected",
+         n,
+         length(cards)
+       )
+      }
+      self$cards <- cards
       self$spaces <- draw_spaces(cards)
       self$order_number <- self$spaces$order_number
       self$turns <- 0
-      self$cards <- cards
-      self$cards_in_play <- cards
-      self$drawn <- c()
+      self$cards_in_play <- 1:length(self$cards)
+      self$drawn <- 0
       self$bingos <- data.frame(
-        card = 1:ncol(cards),
+        card = 1:length(cards),
         bingo_turn = 0
       )
     },
     draw = function() {
       self$turns <- self$turns + 1
-      self$drawn <- c(self$drawn, self$spaces$order[self$turns])
+      self$drawn <- c(self$drawn, self$order_number[self$turns])
     },
-    check_cards <- function() {
-      bingos <- self$cards_in_play %>% 
-        purrr::map_lgl(~check_card(., self$drawn)) %>% 
-        which() 
-      
-      if(length(bingos) > 0) {
-        self$bingos$bingo_turn[bingos] <- self$turns
-        self$cards_in_play <- self$cards_in_play[-bingos]
+    check_cards = function() {
+      cards_to_check <- self$cards[self$cards_in_play]
+      bingo_check <- cards_to_check %>%
+        purrr::map_lgl(~check_card(., self$drawn))
+
+      if(sum(bingo_check) > 0) {
+        winning_cards <- self$cards_in_play[bingo_check]
+        # Mark the turn that cards won a bingo
+        self$bingos$bingo_turn[winning_cards] <- self$turns
+        self$cards_in_play <- self$cards_in_play[!bingo_check]
       }
     },
-    }
-    }
+    play_turn = function() {
+      self$draw()
+      self$check_cards()
+      },
+    play_game = function() {
+      while(length(self$cards_in_play) > 0) {
+        self$play_turn()
+      }
+      
+      return(self$bingos)
+    } 
+    
+
   )
 )
