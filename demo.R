@@ -54,6 +54,26 @@ game_results %>%
   )
 
 # Get bingo cards and draw numbers
-game1$cards
 
-game1$spaces   
+# Debug games
+cards <- `game20224-11-27`$cards
+
+game <- play_game$new(cards = cards)
+
+"0" %in% game$order_number
+
+game$drawn
+purrr::list_rbind(game$cards) %>% View()
+
+game$cards_in_play
+
+game$play_turn()
+game$play_game()
+
+
+for(i in 1:10) {
+  game$play_turn()
+}
+
+game$cards_in_play
+game$cards[[1]]

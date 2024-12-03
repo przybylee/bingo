@@ -18,6 +18,7 @@ draw_spaces <- function(cards) {
   spaces <- all_cards %>% 
     tidyr::pivot_longer(cols = everything()) %>%
     mutate(space = paste(name, value, sep = "-")) %>% 
+    filter(space != "n-0") %>% 
     pull() %>% 
     unique()
   
@@ -97,8 +98,8 @@ play_game <- R6::R6Class(
        } else if (n != length(cards)) {
        futile.logger::flog.warn(
          "Playing with %i cards, but %i cards were expected",
-         n,
-         length(cards)
+         length(cards),
+         n
        )
       }
       self$cards <- cards
@@ -122,6 +123,8 @@ play_game <- R6::R6Class(
         purrr::map_lgl(~check_card(., self$drawn))
 
       if(sum(bingo_check) > 0) {
+        glue::glue("{sum(bingo_check)} card(s) won a bingo on turn {self$turns}") %>% 
+          futile.logger::flog.info()
         winning_cards <- self$cards_in_play[bingo_check]
         # Mark the turn that cards won a bingo
         self$bingos$bingo_turn[winning_cards] <- self$turns
